@@ -1,4 +1,4 @@
-﻿package main
+package main
 
 import (
 	"bytes"
@@ -7,8 +7,15 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"sync"
 	"time"
 )
+
+const maxRateLimitRetries = 3
+const minimumSendInterval = 500 * time.Millisecond
+
+var throttleMu sync.Mutex
+var nextSendAtByWebhook = map[string]time.Time{}
 
 // ActiveReturn - Database layout of a running timer that is soon to be executed.
 type ActiveReturn struct {
@@ -60,46 +67,77 @@ func HandleReturn(active ActiveReturn) {
 
 // SendWebhook - Sends the webhook as JSON encoded payload and checks the return value for errors.
 func SendWebhook(webhookUrl string, content WebhookContent) {
-	payload := new(bytes.Buffer)
-	err := json.NewEncoder(payload).Encode(content)
+	payload, err := json.Marshal(content)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to encode as JSON: %v\n", err)
 		return
 	}
 
-	resp, err := http.Post(webhookUrl, "application/json", payload)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to send webhook: %v\n", err)
-		return
-	}
+	for attempt := 0; attempt <= maxRateLimitRetries; attempt++ {
+		waitForReservedSendSlot(webhookUrl)
 
-	// Rate-Limit hit, retry after waiting
-	if resp.StatusCode == 429 {
-		fmt.Println("Rate limit exceeded")
-		var rateLimit RateLimitResponse
-		err = json.NewDecoder(resp.Body).Decode(&rateLimit)
+		resp, err := http.Post(webhookUrl, "application/json", bytes.NewReader(payload))
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Unable to send webhook: %v\n", err)
+			return
+		}
+
+		if resp.StatusCode == http.StatusTooManyRequests {
+			var rateLimit RateLimitResponse
+			err = json.NewDecoder(resp.Body).Decode(&rateLimit)
+			resp.Body.Close()
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "Unable to convert response to rate-limit json: %v\n", err)
+				return
+			}
+
+			if attempt >= maxRateLimitRetries {
+				fmt.Fprintf(os.Stderr, "Webhook rate limited after %d retries: %s\n", maxRateLimitRetries, rateLimit.Message)
+				return
+			}
+
+			delay := time.Duration(rateLimit.RetryAfter*float64(time.Second)) + 250*time.Millisecond
+			setNextSendAt(webhookUrl, time.Now().Add(delay))
+			fmt.Printf("Webhook rate limited. Retrying after %s (attempt %d/%d)\n", delay, attempt+1, maxRateLimitRetries)
+			continue
+		}
+
+		if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
+			responseBody, readErr := io.ReadAll(resp.Body)
+			resp.Body.Close()
+			if readErr != nil {
+				fmt.Fprintf(os.Stderr, "Unable to read response body: %v\n", readErr)
+				return
+			}
+
+			fmt.Fprintf(os.Stderr, "Error response was: %s\n", string(responseBody))
+			setNextSendAt(webhookUrl, time.Now().Add(minimumSendInterval))
+			return
+		}
+
 		resp.Body.Close()
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Unable to convert response to rate-limit json: %v\n", err)
-			return
-		}
-
-		time.Sleep(time.Duration(rateLimit.RetryAfter * float64(time.Second)))
-		SendWebhook(webhookUrl, content)
-
+		setNextSendAt(webhookUrl, time.Now().Add(minimumSendInterval))
 		return
 	}
+}
 
-	if resp.StatusCode != 200 && resp.StatusCode != 204 {
-		defer resp.Body.Close()
-
-		responseBody, err := io.ReadAll(resp.Body)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Unable to read response body: %v\n", err)
-			return
-		}
-
-		fmt.Fprintf(os.Stderr, "Error response was: %s\n", string(responseBody))
-		return
+func waitForReservedSendSlot(webhookUrl string) {
+	throttleMu.Lock()
+	scheduledAt := nextSendAtByWebhook[webhookUrl]
+	now := time.Now()
+	if scheduledAt.Before(now) {
+		scheduledAt = now
 	}
+	nextSendAtByWebhook[webhookUrl] = scheduledAt.Add(minimumSendInterval)
+	throttleMu.Unlock()
+
+	if delay := time.Until(scheduledAt); delay > 0 {
+		time.Sleep(delay)
+	}
+}
+
+func setNextSendAt(webhookUrl string, nextSendAt time.Time) {
+	throttleMu.Lock()
+	nextSendAtByWebhook[webhookUrl] = nextSendAt
+	throttleMu.Unlock()
 }
