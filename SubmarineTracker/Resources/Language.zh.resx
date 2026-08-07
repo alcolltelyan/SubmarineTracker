@@ -98,8 +98,14 @@
   <data name="MenuEntryKoFi" xml:space="preserve">
         <value>Ko-Fi 赞助</value>
     </data>
+  <data name="MenuEntryWebsite" xml:space="preserve">
+        <value>网站</value>
+    </data>
   <data name="MenuTooltipKoFi" xml:space="preserve">
         <value>在浏览器中打开 kofi 页面。</value>
+    </data>
+  <data name="MenuTooltipWebsite" xml:space="preserve">
+        <value>在浏览器中打开战利品页面。</value>
     </data>
   <data name="MenuEntrySync" xml:space="preserve">
         <value>同步</value>
@@ -1008,8 +1014,14 @@
   <data name="TermsBreakpoints" xml:space="preserve">
         <value>断点</value>
     </data>
+  <data name="BuilderShipCheckboxT1" xml:space="preserve">
+        <value>使用 T1</value>
+    </data>
   <data name="BuilderShipCheckboxT2" xml:space="preserve">
         <value>使用 T2</value>
+    </data>
+  <data name="BuilderShipCheckboxPoor" xml:space="preserve">
+        <value>使用较差</value>
     </data>
   <data name="BuilderShipCheckboxNormal" xml:space="preserve">
         <value>使用普通</value>
@@ -1282,13 +1294,15 @@
         <value>加入 Discord</value>
     </data>
   <data name="OverseasDiscordTooltip" xml:space="preserve">
-        <value>Discord: Overseas Casuals
-潜水艇玩法的推荐 Discord 频道
-只需选择 'Subs' 频道并在
-'#you-dont-pay-my-sub' 加入我们</value>
+        <value>Discord：Overseas Casuals
+推荐加入的潜艇交流服务器。
+选择 "#you-dont-pay-my-sub" 子频道加入我们。</value>
     </data>
-  <data name="TermSpreadsheet" xml:space="preserve">
-        <value>电子表格</value>
+  <data name="WebsiteTooltip" xml:space="preserve">
+        <value>解锁与掉落信息始终最新。</value>
+    </data>
+  <data name="TermWebsite" xml:space="preserve">
+        <value>网站</value>
     </data>
   <data name="TermType" xml:space="preserve">
         <value>类型</value>
@@ -1447,6 +1461,6 @@
         <value>你的舰队足以进行 {0} 次航行和 {1} 次合并维修。</value>
     </data>
   <data name="ConfigTabCheckboxInventorySlotCount" xml:space="preserve">
-        <value>Show Inventory Slot Count</value>
+        <value>显示物品栏槽数</value>
     </data>
 </root>

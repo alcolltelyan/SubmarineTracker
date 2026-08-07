@@ -10,7 +10,7 @@ namespace SubmarineTracker;
 
 public static class Webhook
 {
-    private static readonly HttpClient Client = new();
+    public static readonly HttpClient SharedClient = new();
     private static readonly SemaphoreSlim SendLock = new(1, 1);
     private const int MaxRateLimitRetries = 3;
     private static readonly TimeSpan MinimumSendInterval = TimeSpan.FromMilliseconds(500);
@@ -51,7 +51,7 @@ public static class Webhook
                     await WaitForThrottleWindowAsync().ConfigureAwait(false);
 
                     using var request = new StringContent(payload, Encoding.UTF8, "application/json");
-                    using var response = await Client.PostAsync(Plugin.Configuration.WebhookUrl, request).ConfigureAwait(false);
+                    using var response = await SharedClient.PostAsync(Plugin.Configuration.WebhookUrl, request).ConfigureAwait(false);
                     if (response.IsSuccessStatusCode)
                     {
                         NextSendAtUtc = DateTimeOffset.UtcNow + MinimumSendInterval;

@@ -25,6 +25,8 @@ public class Configuration : IPluginConfiguration
     public bool ShowRouteInAll = false;
     public bool ShowDateInAll = false;
 
+    public bool PreventEscapeClosing = true;
+
     public bool ShowDtrEntry = false;
     public bool DtrShowOverlayNumbers = true;
     public bool DtrShowSubmarineName = true;
@@ -99,13 +101,16 @@ public class Configuration : IPluginConfiguration
 
     public List<(ulong Id, bool Hidden)> ManagedFCs = [];
 
+    [JsonIgnore]
+    public static readonly JsonSerializerSettings SerializerSettings = new()
+    {
+        TypeNameAssemblyFormatHandling = TypeNameAssemblyFormatHandling.Simple,
+        TypeNameHandling = TypeNameHandling.Objects,
+    };
+
     public void Save()
     {
-        WriteAllTextSafe(Plugin.PluginInterface.ConfigFile.FullName, JsonConvert.SerializeObject(this, Formatting.Indented, new JsonSerializerSettings
-        {
-            TypeNameAssemblyFormatHandling = TypeNameAssemblyFormatHandling.Simple,
-            TypeNameHandling = TypeNameHandling.Objects
-        }));
+        WriteAllTextSafe(Plugin.PluginInterface.ConfigFile.FullName, JsonConvert.SerializeObject(this, Formatting.Indented, SerializerSettings));
     }
 
     internal static void WriteAllTextSafe(string path, string text)

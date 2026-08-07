@@ -2,7 +2,6 @@ using System.Globalization;
 using System.Threading.Tasks;
 using Dalamud.IoC;
 using Dalamud.Plugin;
-using Dalamud.Game;
 using Dalamud.Interface.ImGuiFileDialog;
 using Dalamud.Interface.ImGuiNotification;
 using Dalamud.Interface.Windowing;
@@ -64,6 +63,7 @@ public class Plugin : IDalamudPlugin
     private const string DiscordThread = "https://discord.com/channels/581875019861328007/1094255662860599428";
     private const string Crowdin = "https://crowdin.com/project/submarine-tracker";
     private const string KoFiLink = "https://ko-fi.com/infiii";
+    private const string WebsiteLink = "https://xivstats.com/submarine";
 
     private readonly PluginCommandManager<Plugin> CommandManager;
     private readonly ServerBar ServerBar;
@@ -400,6 +400,7 @@ public class Plugin : IDalamudPlugin
     public static void IssuePage() => Util.OpenLink(GithubIssue);
     public static void DiscordSupport() => Util.OpenLink(DiscordThread);
     public static void Kofi() => Util.OpenLink(KoFiLink);
+    public static void Website() => Util.OpenLink(WebsiteLink);
     public static void LocHelp() => Util.OpenLink(Crowdin);
 
     #region Draws
