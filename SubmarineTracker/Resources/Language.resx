@@ -405,6 +405,9 @@ e.g You won't see slot 3 if slot 2 is empty</value>
     <data name="HelpyTabWarningAllaganTools" xml:space="preserve">
         <value>AllaganTools not available.</value>
     </data>
+    <data name="HelpyStorageTabWarning" xml:space="preserve">
+        <value>No data available.</value>
+    </data>
     <data name="ProgressionTabTooltipUnlocksMap" xml:space="preserve">
         <value>Unlocks map</value>
     </data>
@@ -726,6 +729,12 @@ but stops them from automatically adjusting size.</value>
     </data>
     <data name="ConfigTabEntryAllSection" xml:space="preserve">
         <value>All Section:</value>
+    </data>
+    <data name="ConfigTabCheckboxShowResources" xml:space="preserve">
+        <value>Show Resources</value>
+    </data>
+    <data name="ConfigTabCheckboxSwapResources" xml:space="preserve">
+        <value>Swap Resources With Leftover</value>
     </data>
     <data name="ConfigTabCheckboxShowRoute" xml:space="preserve">
         <value>Show Route</value>
@@ -1463,10 +1472,19 @@ in '#you-dont-pay-my-sub'.</value>
     <data name="StorageAllOkay" xml:space="preserve">
         <value>Your fleet has enough for {0} voyages and {1} combined repairs.</value>
     </data>
+    <data name="StorageAllOkayShort" xml:space="preserve">
+        <value>{0:N0} voyages and {1:N0} repairs</value>
+    </data>
     <data name="ConfigTabCheckboxInventorySlotCount" xml:space="preserve">
         <value>Show Inventory Slot Count</value>
     </data>
     <data name="ConfigTabCheckboxPreventEscape" xml:space="preserve">
         <value>Prevent ESC Closing Windows</value>
+    </data>
+    <data name="WarningNoStorageCount" xml:space="preserve">
+        <value>No Data</value>
+    </data>
+    <data name="ErrorLeftoverCalculationFail" xml:space="preserve">
+        <value>Leftover Calculation Failed!</value>
     </data>
 </root>

@@ -76,7 +76,7 @@ public static class Utils
             5 => "TLS",
             6 => "SID",
             7 => "TNE",
-            _ => ""
+            _ => "Unknown"
         };
     }
 

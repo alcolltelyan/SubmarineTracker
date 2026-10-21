@@ -85,8 +85,10 @@ public enum Items : uint
     ModSyldraClassStern = 24367,
 }
 
-internal static class ImportantItemsMethods
+internal static class ItemExtensions
 {
+    public static readonly Items[] ImportantItems = [Items.Tanks, Items.Kits];
+
     public static Item GetItem(this Items item) => Sheets.GetItem((uint)item);
     public static int GetPartId(this Items item) => Submarines.PartIdToItemId.First(d => d.Value == (uint) item).Key;
 }

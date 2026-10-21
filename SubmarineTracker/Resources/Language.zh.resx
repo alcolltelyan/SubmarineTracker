@@ -204,9 +204,10 @@
   <data name="ReturnOverlayInfoNoReturn" xml:space="preserve">
         <value>没有潜水艇已返回。</value>
     </data>
-  <data name="RouteOverlayTooltipHighRank" xml:space="preserve">
-        <value>潜水艇等级超过阈值且必须包含航路点为空
-请调整设置以获取更高级别的航线建议。</value>
+  <data name="RouteOverlayTooltipHighRankWithTip" xml:space="preserve">
+        <value>潜水艇等级已超过阈值，且「必须包含」航路点为空
+请检查配置以获取更高等级的航线建议方案。
+设置 → 配置器 → 最高等级</value>
     </data>
   <data name="TermsLoading" xml:space="preserve">
         <value>加载中</value>
@@ -402,6 +403,9 @@
     </data>
   <data name="HelpyTabWarningAllaganTools" xml:space="preserve">
         <value>AllaganTools 不可用。</value>
+    </data>
+  <data name="HelpyStorageTabWarning" xml:space="preserve">
+        <value>暂无数据。</value>
     </data>
   <data name="ProgressionTabTooltipUnlocksMap" xml:space="preserve">
         <value>解锁海底图</value>
@@ -723,7 +727,13 @@
 但将无法自动调整大小。</value>
     </data>
   <data name="ConfigTabEntryAllSection" xml:space="preserve">
-        <value>所有部分:</value>
+        <value>全部部分:</value>
+    </data>
+  <data name="ConfigTabCheckboxShowResources" xml:space="preserve">
+        <value>显示资源</value>
+    </data>
+  <data name="ConfigTabCheckboxSwapResources" xml:space="preserve">
+        <value>用剩余资源替代显示</value>
     </data>
   <data name="ConfigTabCheckboxShowRoute" xml:space="preserve">
         <value>显示航线</value>
@@ -1460,7 +1470,19 @@
   <data name="StorageAllOkay" xml:space="preserve">
         <value>你的舰队足以进行 {0} 次航行和 {1} 次合并维修。</value>
     </data>
+  <data name="StorageAllOkayShort" xml:space="preserve">
+        <value>{0:N0} 航次和 {1:N0} 次修理</value>
+    </data>
   <data name="ConfigTabCheckboxInventorySlotCount" xml:space="preserve">
         <value>显示物品栏槽数</value>
+    </data>
+  <data name="ConfigTabCheckboxPreventEscape" xml:space="preserve">
+        <value>阻止 ESC 键关闭窗口</value>
+    </data>
+  <data name="WarningNoStorageCount" xml:space="preserve">
+        <value>无数据</value>
+    </data>
+  <data name="ErrorLeftoverCalculationFail" xml:space="preserve">
+        <value>剩余资源计算失败！</value>
     </data>
 </root>

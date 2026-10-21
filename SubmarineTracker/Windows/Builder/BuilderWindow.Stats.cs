@@ -31,15 +31,10 @@ public partial class BuilderWindow
             repairAfter = CurrentBuild.CalculateUntilRepair();
         }
 
-        var tanks = 0u;
-        if (Plugin.AllaganToolsConsumer.IsAvailable)
-        {
-            // build cache if needed
-            Storage.BuildStorageCache();
-            if (Storage.StorageCache.TryGetValue(Plugin.PlayerState.ContentId, out var cachedItems) && cachedItems.TryGetValue((uint)Items.Tanks, out var temp))
-                tanks = temp.Count;
-        }
+        if (!Plugin.DatabaseCache.TryGetFC(Plugin.GetFCId, out var fc))
+            fc = FreeCompany.CreateFakeFC();
 
+        Storage.TryGetStorageCount((uint)Items.Tanks, fc, out var tanks);
         using (var table = ImRaii.Table("##buildColumn", 2, ImGuiTableFlags.SizingFixedFit))
         {
             if (table.Success)
@@ -110,7 +105,7 @@ public partial class BuilderWindow
                 Helper.TextColored(ImGuiColors.HealerGreen, Language.TermsFuel);
 
                 ImGui.TableNextColumn();
-                ImGui.TextUnformatted($"{CurrentBuild.FuelCost}{(tanks > 0 ? $" / {tanks}" : "")}");
+                ImGui.TextUnformatted($"{CurrentBuild.FuelCost}{(tanks > 0 ? $" / {tanks:N0}" : "")}");
 
                 ImGui.TableNextRow();
 

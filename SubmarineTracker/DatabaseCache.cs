@@ -1,7 +1,6 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 using FFXIVClientStructs.FFXIV.Client.Game;
-using FFXIVClientStructs.Interop;
 using Lumina.Excel.Sheets;
 using Lumina.Text.ReadOnly;
 using SubmarineTracker.Data;
@@ -18,6 +17,7 @@ public class DatabaseCache : IDisposable
     private Loot[] Loot = [];
     private Submarine[] Submarines = [];
     private Dictionary<ulong, FreeCompany> FreeCompanies = [];
+    private Dictionary<ulong, StorageData> Storage = [];
 
     // Build from data
     private Dictionary<ulong, Dictionary<uint, Dictionary<Item, int>>> AllLoot = new();
@@ -26,12 +26,14 @@ public class DatabaseCache : IDisposable
     private long FCRefresh;
     private long SubRefresh;
     private long LootRefresh;
+    private long StorageRefresh;
 
     private long LootCounter = -1;
 
     public bool NewData;
     public bool FCNeedsRefresh;
     public bool SubsNeedRefresh;
+    public bool StorageNeedRefresh;
 
     public DatabaseCache()
     {
@@ -92,18 +94,49 @@ public class DatabaseCache : IDisposable
         return FreeCompanies;
     }
 
+    public bool HasFC(ulong id)
+    {
+        CheckFreeCompany();
+
+        return FreeCompanies.ContainsKey(id);
+    }
+
     public bool TryGetFC(ulong id, out FreeCompany fc)
     {
         CheckFreeCompany();
 
         var ok = FreeCompanies.TryGetValue(id, out var returnedFC);
-        fc = returnedFC ?? new FreeCompany();
+        fc = returnedFC ?? FreeCompany.CreateFakeFC();
 
         return ok;
     }
 
     public (FreeCompany Fc, Submarine[] Subs) GetFcAndSubs(ulong id)
         => (GetFreeCompanies()[id], GetSubmarines(id));
+
+    public bool HasStorage()
+    {
+        CheckStorage();
+
+        return Storage.Count > 0;
+    }
+
+    public Dictionary<ulong, StorageData> GetStorage()
+    {
+        CheckStorage();
+
+        return Storage;
+    }
+
+    public bool TryGetStorage(ulong id, out StorageData data)
+    {
+        CheckStorage();
+
+        var ok = Storage.TryGetValue(id, out var returnedData);
+        data = returnedData ?? new StorageData();
+
+        return ok;
+    }
 
     private void CheckLoot()
     {
@@ -228,6 +261,32 @@ public class DatabaseCache : IDisposable
             Plugin.Log.Error(ex, "Unable to refresh freecompany data");
         }
     }
+
+    private void CheckStorage()
+    {
+        if (!StorageNeedRefresh && StorageRefresh >= Environment.TickCount64)
+            return;
+
+        StorageRefresh = Environment.TickCount64 + LongDelay;
+        StorageNeedRefresh = false;
+
+        Task.Run(RefreshStorage);
+    }
+
+    private void RefreshStorage()
+    {
+        try
+        {
+            var result = Database.GetStorage().ToDictionary(f => f.FreeCompanyId, f => f);
+
+            Thread.MemoryBarrier();
+            Storage = result;
+        }
+        catch (Exception ex)
+        {
+            Plugin.Log.Error(ex, "Unable to refresh storage data");
+        }
+    }
 }
 
 public record LootWithDate(DateTime Date, Loot Loot);
@@ -236,6 +295,7 @@ public record FreeCompany
 {
     public ulong FreeCompanyId;
     public string Tag = "";
+    public ulong ContentId;
     public string World = "";
     public string CharacterName = "";
 
@@ -247,6 +307,7 @@ public record FreeCompany
         var fake = new FreeCompany
         {
             FreeCompanyId = 0,
+            ContentId = 0,
             Tag = "Fake",
             CharacterName = "Fake",
             World = "Fake",
@@ -296,7 +357,7 @@ public record Submarine
 
     public unsafe Submarine(HousingWorkshopSubmersibleSubData data, int idx)
     {
-        Name = new ReadOnlySeStringSpan(data.Name.GetPointer(0)).ExtractText();
+        Name = new ReadOnlySeStringSpan(data.Name).ToString();
         Rank = data.RankId;
         Hull = data.HullId;
         Stern = data.SternId;
@@ -536,4 +597,13 @@ public record Loot
     public Item PrimaryItem => Sheets.ItemSheet.GetRow(Primary);
     public Item AdditionalItem => Sheets.ItemSheet.GetRow(Additional);
     public bool ValidAdditional => Additional > 0;
+}
+
+public record StorageData
+{
+    public ulong FreeCompanyId;
+
+    public Dictionary<uint, uint> Items = [];
+
+    public StorageData() {}
 }
