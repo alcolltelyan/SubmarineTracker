@@ -99,13 +99,13 @@
         <value>Don Ko-Fi</value>
     </data>
   <data name="MenuEntryWebsite" xml:space="preserve">
-        <value>Website</value>
+        <value>Site internet</value>
     </data>
   <data name="MenuTooltipKoFi" xml:space="preserve">
         <value>Ouvrir la page Ko-Fi dans votre navigateur.</value>
     </data>
   <data name="MenuTooltipWebsite" xml:space="preserve">
-        <value>Open the loot website in your browser.</value>
+        <value>Ouvrez "Butin" le site internet dans votre navigateur.</value>
     </data>
   <data name="MenuEntrySync" xml:space="preserve">
         <value>Synchroniser</value>
@@ -204,9 +204,10 @@ Veuillez visiter l'atelier de votre compagnie libre et interagissez avec le pann
   <data name="ReturnOverlayInfoNoReturn" xml:space="preserve">
         <value>Aucun sous-marin n'est revenu.</value>
     </data>
-  <data name="RouteOverlayTooltipHighRank" xml:space="preserve">
-        <value>Rang de Sous-marin au-dessus du seuil indiqué et "Doit inclure" est vide
-Vérifiez votre configuration pour des suggestions de niveau supérieur.</value>
+  <data name="RouteOverlayTooltipHighRankWithTip" xml:space="preserve">
+        <value>Submarine above threshold and MustInclude is empty
+Check your config for higher level suggestions.
+Config -> Builder -> Highest Rank</value>
     </data>
   <data name="TermsLoading" xml:space="preserve">
         <value>Chargement</value>
@@ -287,7 +288,7 @@ Vérifiez votre configuration pour des suggestions de niveau supérieur.</value>
         <value>Fixer à :</value>
     </data>
   <data name="LootTabTooltipFixed" xml:space="preserve">
-        <value>Selecting 'No Limit' will allow you to pick a specific time frame.</value>
+        <value>Sélectionner "Sans limite" vous permettra de choisir une période spécifique.</value>
     </data>
   <data name="LootTabEntryFromToDateSelection" xml:space="preserve">
         <value>DeÀ:</value>
@@ -402,6 +403,9 @@ Par exemple, vous ne verrez pas l'emplacement 3 si l'emplacement 2 est vide</val
     </data>
   <data name="HelpyTabWarningAllaganTools" xml:space="preserve">
         <value>AllaganTools n'est pas disponible.</value>
+    </data>
+  <data name="HelpyStorageTabWarning" xml:space="preserve">
+        <value>No data available.</value>
     </data>
   <data name="ProgressionTabTooltipUnlocksMap" xml:space="preserve">
         <value>Débloque la carte</value>
@@ -725,6 +729,12 @@ mais les empêche de changer automatiquement.</value>
   <data name="ConfigTabEntryAllSection" xml:space="preserve">
         <value>Toutes les sections :</value>
     </data>
+  <data name="ConfigTabCheckboxShowResources" xml:space="preserve">
+        <value>Show Resources</value>
+    </data>
+  <data name="ConfigTabCheckboxSwapResources" xml:space="preserve">
+        <value>Swap Resources With Leftover</value>
+    </data>
   <data name="ConfigTabCheckboxShowRoute" xml:space="preserve">
         <value>Afficher l'itinéraire</value>
     </data>
@@ -1015,13 +1025,13 @@ Avec cette option, il prendra la moyenne du bonus possible</value>
         <value>Breakpoints</value>
     </data>
   <data name="BuilderShipCheckboxT1" xml:space="preserve">
-        <value>Use T1</value>
+        <value>Utilisez T1</value>
     </data>
   <data name="BuilderShipCheckboxT2" xml:space="preserve">
         <value>Utiliser T2</value>
     </data>
   <data name="BuilderShipCheckboxPoor" xml:space="preserve">
-        <value>Use Poor</value>
+        <value>Utilisez communs</value>
     </data>
   <data name="BuilderShipCheckboxNormal" xml:space="preserve">
         <value>Utiliser Normal</value>
@@ -1117,7 +1127,7 @@ Avec cette option, il prendra la moyenne du bonus possible</value>
         <value>Exp restante :</value>
     </data>
   <data name="DurationLimitNoLimit" xml:space="preserve">
-        <value>Aucune</value>
+        <value>Sans limite</value>
     </data>
   <data name="DurationLimit24Hours" xml:space="preserve">
         <value>24 heures</value>
@@ -1216,7 +1226,7 @@ Avec cette option, il prendra la moyenne du bonus possible</value>
         <value>Normal</value>
     </data>
   <data name="RetTermPoor" xml:space="preserve">
-        <value>Faible</value>
+        <value>communs</value>
     </data>
   <data name="FavorTermYes" xml:space="preserve">
         <value>Oui</value>
@@ -1294,16 +1304,16 @@ Avec cette option, il prendra la moyenne du bonus possible</value>
         <value>Rejoindre Discord</value>
     </data>
   <data name="OverseasDiscordTooltip" xml:space="preserve">
-        <value>Discord: Overseas Casuals
-Recommended discord for submarines.
-Select the 'Subs' channel and join us
-in '#you-dont-pay-my-sub'.</value>
+        <value>Discord : Overseas Casuals
+Discord recommandé pour les sous-marins.
+Sélectionnez le canal « Subs » et rejoignez-nous
+dans « #you-dont-pay-my-sub ».</value>
     </data>
   <data name="WebsiteTooltip" xml:space="preserve">
-        <value>Always up to date unlock and loot information.</value>
+        <value>Informations toujours à jour sur les déblocages et le butin.</value>
     </data>
   <data name="TermWebsite" xml:space="preserve">
-        <value>Website</value>
+        <value>Site internet</value>
     </data>
   <data name="TermType" xml:space="preserve">
         <value>Type</value>
@@ -1461,7 +1471,19 @@ in '#you-dont-pay-my-sub'.</value>
   <data name="StorageAllOkay" xml:space="preserve">
         <value>Votre flotte a assez pour {0} voyages et {1} réparations combinées.</value>
     </data>
+  <data name="StorageAllOkayShort" xml:space="preserve">
+        <value>{0:N0} voyages and {1:N0} repairs</value>
+    </data>
   <data name="ConfigTabCheckboxInventorySlotCount" xml:space="preserve">
-        <value>Show Inventory Slot Count</value>
+        <value>Afficher le nombre d'emplacements d'inventaire</value>
+    </data>
+  <data name="ConfigTabCheckboxPreventEscape" xml:space="preserve">
+        <value>Prevent ESC Closing Windows</value>
+    </data>
+  <data name="WarningNoStorageCount" xml:space="preserve">
+        <value>No Data</value>
+    </data>
+  <data name="ErrorLeftoverCalculationFail" xml:space="preserve">
+        <value>Leftover Calculation Failed!</value>
     </data>
 </root>

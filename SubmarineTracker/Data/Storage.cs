@@ -5,32 +5,30 @@ namespace SubmarineTracker.Data;
 
 public static class Storage
 {
-    public static bool Refresh = true;
-    public static readonly Dictionary<ulong, Dictionary<uint, CachedItem>> StorageCache = new();
-
-    public record CachedItem(Item Item, uint Count);
-
     public static int InventorySlotsFree = -1;
 
-    public static void BuildStorageCache()
+    public static bool HasStorageData()
     {
-        if (!Refresh)
-            return;
+        if (Plugin.AllaganToolsConsumer.IsAvailable)
+            return true;
 
-        Refresh = false;
-        StorageCache.Clear();
+        return Plugin.DatabaseCache.HasStorage();
+    }
 
-        var possibleItems = Enum.GetValues<Items>();
-        foreach (var key in  Plugin.DatabaseCache.GetFreeCompanies().Keys)
+    public static bool TryGetStorageCount(uint item, FreeCompany fc, out uint storageCount)
+    {
+        storageCount = 0;
+
+        if (Plugin.AllaganToolsConsumer.IsAvailable)
         {
-            StorageCache.Add(key, new Dictionary<uint, CachedItem>());
-            foreach (var item in possibleItems.Select(e => e.GetItem()))
-            {
-                var count = Plugin.AllaganToolsConsumer.GetCount(item.RowId, key);
-                if (count != 0 && count != uint.MaxValue)
-                    StorageCache[key].Add(item.RowId, new CachedItem(item, count));
-            }
+            storageCount = Plugin.AllaganToolsConsumer.GetCount(item, fc.ContentId);
+            return storageCount != 0 && storageCount != uint.MaxValue;
         }
+
+        if (!Plugin.DatabaseCache.TryGetStorage(fc.FreeCompanyId, out var storageData))
+            return false;
+
+        return storageData.Items.TryGetValue(item, out storageCount);
     }
 
     public static unsafe void GetFreeSlotCount()
@@ -39,10 +37,25 @@ public static class Storage
         InventorySlotsFree = manager == null ? -1 : (int)manager->GetEmptySlotsInBag();
     }
 
-    public static unsafe int InventoryCount(Items item)
+    public static int InventoryCount(Items item)
+        => InventoryCount((uint)item);
+
+    public static unsafe int InventoryCount(uint item)
     {
         var manager = InventoryManager.Instance();
-        return manager == null ? -1 : manager->GetInventoryItemCount((uint) item, false, false);
+        return manager == null ? -1 : manager->GetInventoryItemCount(item, false, false);
+    }
+
+    public static Dictionary<uint, uint> GenerateStorageData()
+    {
+        var tanks = InventoryCount(Items.Tanks);
+        var kits = InventoryCount(Items.Kits);
+
+        return new Dictionary<uint, uint>
+        {
+            { (uint)Items.Tanks, (uint)tanks },
+            { (uint)Items.Kits, (uint)kits },
+        };
     }
 
     public static (int Voyages, int Repairs) CheckLeftovers(IEnumerable<Submarine> subs)
@@ -56,6 +69,22 @@ public static class Storage
             return (-1, -1);
         }
 
+        var requiredKits = 0;
+        var requiredTanks = 0;
+        foreach (var sub in subs)
+        {
+            requiredKits += sub.Build.RepairCosts;
+            requiredTanks += Voyage.ToExplorationArray(sub.Points).Sum(p => p.CeruleumTankReq);
+        }
+
+        if (requiredTanks == 0 || requiredKits == 0)
+            return (-1, -1);
+
+        return (tanks / requiredTanks, kits / requiredKits);
+    }
+
+    public static (long Voyages, long Repairs) CheckLeftoversFromStorage(IEnumerable<Submarine> subs, uint tanks, uint kits)
+    {
         var requiredKits = 0;
         var requiredTanks = 0;
         foreach (var sub in subs)

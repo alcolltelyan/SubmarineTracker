@@ -201,3 +201,43 @@ voyage result packet
 ```
 
 Return notifications created by the offline backend use the same bounded retry policy and a per-webhook 500 ms reservation schedule. Existing dispatch and return messages sent by the plugin also benefit from the new shared C# throttle even though their message content was not otherwise changed by these fork commits.
+
+## October 20, 2026 upstream integration candidate
+
+The local integration branch `codex/sync-upstream-master` merges upstream
+`04c54d770f815cd416bbade1ac5b178b551a32b5` into fork
+`c84d745848a5ba65b665526fcd70dbe101fdd4c1`, preserving both parents. The seven
+incoming commits add account management, storage/inventory tracking, resource
+and leftover UI changes, localization, and database migrations to schema 3.
+
+The merge required no textual conflict resolutions. A complete preservation
+audit accounts for every file differing from the previously integrated upstream
+baseline: fork-only files remain unchanged; upstream-only files match the target;
+all five language resources retain their combined values; generated accessors
+retain both sets of keys. Configuration retains the three fork settings alongside
+new upstream settings. Database caching retains its five-second interval alongside
+upstream storage support. The existing fork-specific translation differences and
+generated-file formatting are retained, apart from removing trailing spaces on
+six newly added blank lines in the generated resource file.
+
+Validation uses a Release build of the original checkout as the baseline, a
+Release build of the merged plugin, production-assembly C# regression checks,
+the preservation audit, and Go fake-endpoint tests plus backend compilation.
+The final C# run passed 61 checks; all three Go test groups passed (including six
+response subcases).
+Database checks cover schemas 0–3, a fresh database, reopening, storage upserts,
+loot counters, and exact preservation of every existing FC/submarine/loot/counter
+row in a disposable copy of the stopped-plugin database. Config checks also
+round-trip the actual backed-up configuration. Simulated webhook checks do not
+send notifications to Discord.
+
+Baseline and merged builds retain existing compiler warnings and the NuGet
+`NU1902` advisory for MessagePack 3.1.8. Dependency upgrades are outside this merge.
+The sandbox required additional filesystem/network access for Git metadata,
+NuGet, Dalamud packaging, and test execution; reruns with that access succeeded.
+
+**Runtime validation remains pending.** The agent has not exercised game hooks,
+game-sheet aggregation, UI, live notifications, or restart persistence in-game.
+Local `master` remains at `c84d745` until the user's smoke test passes; no changes
+have been pushed or deployed. See `tests/README.md` for verification commands,
+the runtime checklist, and source/data recovery artifacts.

@@ -14,17 +14,17 @@ public partial class HelpyWindow
             return;
 
         ImGuiHelpers.ScaledDummy(5.0f);
-        if (!Plugin.AllaganToolsConsumer.IsAvailable)
+        if (!Storage.HasStorageData())
         {
-            Helper.TextColored(ImGuiColors.ParsedOrange, Language.HelpyTabWarningAllaganTools);
+            Helper.TextColored(ImGuiColors.ParsedOrange, Language.HelpyStorageTabWarning);
             return;
         }
 
-        // build cache if needed
-        Storage.BuildStorageCache();
-
-        foreach (var (key, fc) in Plugin.DatabaseCache.GetFreeCompanies())
+        foreach (var key in Plugin.GetFCOrderWithoutHidden())
         {
+            if (!Plugin.DatabaseCache.TryGetFC(key, out var fc))
+                continue;
+
             Helper.TextColored(ImGuiColors.DalamudViolet, $"{Plugin.NameConverter.GetName(fc)}:");
 
             using var indent = ImRaii.PushIndent(10.0f);
@@ -36,18 +36,21 @@ public partial class HelpyWindow
             ImGui.TableSetupColumn("##count", ImGuiTableColumnFlags.WidthStretch, 0.15f);
             ImGui.TableSetupColumn("##item");
 
-            foreach (var cached in Storage.StorageCache[key].Values)
+            foreach (var item in ItemExtensions.ImportantItems)
             {
-                ImGui.TableNextColumn();
-                Helper.DrawScaledIcon(cached.Item.Icon, IconSize);
+                var itemRow = item.GetItem();
+                var ok = Storage.TryGetStorageCount((uint)Items.Tanks, fc, out var storageCount);
 
-                var count = $"{cached.Count}x";
+                ImGui.TableNextColumn();
+                Helper.DrawScaledIcon(itemRow.Icon, IconSize);
+
+                var count = ok ? $"{storageCount}x" : Language.WarningNoStorageCount;
                 ImGui.TableNextColumn();
                 ImGui.SameLine(ImGui.GetContentRegionAvail().X - ImGui.CalcTextSize(count).X);
                 ImGui.TextUnformatted(count);
 
                 ImGui.TableNextColumn();
-                ImGui.TextUnformatted(cached.Item.Name.ExtractText());
+                ImGui.TextUnformatted(itemRow.Name.ToString());
 
                 ImGui.TableNextRow();
             }

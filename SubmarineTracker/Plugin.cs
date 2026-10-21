@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Threading.Tasks;
+using Dalamud.Game.Inventory.InventoryEventArgTypes;
 using Dalamud.IoC;
 using Dalamud.Plugin;
 using Dalamud.Interface.ImGuiFileDialog;
@@ -42,6 +43,7 @@ public class Plugin : IDalamudPlugin
     [PluginService] public static IDtrBar DtrBar { get; private set; } = null!;
     [PluginService] public static IPlayerState PlayerState { get; private set; } = null!;
     [PluginService] public static IObjectTable ObjectTable { get; private set; } = null!;
+    [PluginService] public static IGameInventory GameInventory { get; private set; } = null!;
 
     public static Configuration Configuration { get; private set; } = null!;
     public static FileDialogManager FileDialogManager { get; private set; } = null!;
@@ -128,10 +130,11 @@ public class Plugin : IDalamudPlugin
 
         Framework.Update += FrameworkUpdate;
         Framework.Update += Notify.NotifyLoop;
-        ClientState.Login += StartupStorageMessage;
+        ClientState.Login += StartupMessageAndStorageCheck;
+        GameInventory.InventoryChanged += StorageCheck;
 
         if (ClientState.IsLoggedIn)
-            StartupStorageMessage();
+            StartupMessageAndStorageCheck();
 
         // Try to init it last, just to make sure that loc actually loaded fine
         Helper.Initialize(this);
@@ -141,7 +144,7 @@ public class Plugin : IDalamudPlugin
             ReturnOverlay.IsOpen = true;
 
         // Trigger Importer to precalculate hashes
-        Log.Debug($"Loading: {Importer.Filename}");
+        Log.Verbose($"Loading: {Importer.Filename}");
     }
 
     public void Dispose()
@@ -168,7 +171,8 @@ public class Plugin : IDalamudPlugin
         HookManager.Dispose();
         ServerBar.Dispose();
 
-        ClientState.Login -= StartupStorageMessage;
+        GameInventory.InventoryChanged -= StorageCheck;
+        ClientState.Login -= StartupMessageAndStorageCheck;
         Framework.Update -= FrameworkUpdate;
         Framework.Update -= Notify.NotifyLoop;
     }
@@ -325,9 +329,10 @@ public class Plugin : IDalamudPlugin
         var fc = new FreeCompany
         {
             FreeCompanyId = fcId,
+            ContentId = PlayerState.ContentId,
             Tag = local.CompanyTag.TextValue,
             CharacterName = local.Name.TextValue,
-            World = local.HomeWorld.Value.Name.ExtractText(),
+            World = local.HomeWorld.Value.Name.ToString(),
         };
 
         foreach (var submarineExploration in Sheets.ExplorationSheet)
@@ -364,20 +369,78 @@ public class Plugin : IDalamudPlugin
 
     public void Sync()
     {
-        Storage.Refresh = true;
         LoadFCOrder();
     }
 
-    private void StartupStorageMessage()
+    private void StartupMessageAndStorageCheck()
     {
         if (Configuration is { ShowStorageAtStartup: true, ShowStorageMessage: true })
         {
             Framework.RunOnTick(() =>
             {
-                var fcId = GetFCId;
-                if (DatabaseCache.GetFreeCompanies().ContainsKey(fcId))
-                    SendStorageMessage(fcId);
+                try
+                {
+                    var fcId = GetFCId;
+                    if (DatabaseCache.HasFC(fcId))
+                    {
+                        var storage = new StorageData
+                        {
+                            FreeCompanyId = fcId,
+                            Items = Storage.GenerateStorageData(),
+                        };
+
+                        DatabaseCache.Database.UpsertStorage(storage);
+                        DatabaseCache.StorageNeedRefresh = true;
+
+                        SendStorageMessage(fcId);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, "Storage check and message on login failed.");
+                }
             }, TimeSpan.FromSeconds(1));
+        }
+    }
+
+    private void StorageCheck(IReadOnlyCollection<InventoryEventArgs> events)
+    {
+        try
+        {
+            if (!ClientState.IsLoggedIn || ObjectTable.LocalPlayer == null)
+                return;
+
+            var fcId = GetFCId;
+            if (DatabaseCache.HasFC(fcId))
+            {
+                var items = Storage.GenerateStorageData();
+
+                if (DatabaseCache.TryGetStorage(fcId, out var stored))
+                {
+                    var equal = stored.Items.Count == items.Count;
+                    if (equal)
+                    {
+                        foreach (var (key, value) in stored.Items)
+                        {
+                            if (!items.TryGetValue(key, out var v) || v != value)
+                            {
+                                equal = false;
+                                break;
+                            }
+                        }
+
+                        if (equal)
+                            return;
+                    }
+                }
+
+                DatabaseCache.Database.UpsertStorage(new StorageData { FreeCompanyId = fcId, Items = items });
+                DatabaseCache.StorageNeedRefresh = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Storage check on inventory change failed.");
         }
     }
 
@@ -419,7 +482,8 @@ public class Plugin : IDalamudPlugin
     public void OpenConfig() => ConfigWindow.Toggle();
     #endregion
 
-    public static unsafe ulong GetFCId => InfoProxyFreeCompany.Instance()->Id;
+    public static unsafe ulong GetFCId
+        => InfoProxyFreeCompany.Instance()->Id;
 
     public static IEnumerable<ulong> GetFCOrderWithoutHidden()
     {
@@ -455,6 +519,18 @@ public class Plugin : IDalamudPlugin
             }
         }
 
+        foreach (var (key, fcList) in Configuration.AccountFCs)
+        {
+            foreach (var fc in fcList.ToArray())
+            {
+                if (!knownFCs.ContainsKey(fc))
+                {
+                    notSafe = true;
+                    Configuration.AccountFCs[key].Remove(fc);
+                }
+            }
+        }
+
         if (notSafe)
             Configuration.Save();
     }
@@ -486,5 +562,15 @@ public class Plugin : IDalamudPlugin
     public static (ulong Id, bool Hidden) GetManagedFCOrDefault(int index)
     {
         return Configuration.ManagedFCs.ElementAtOrDefault(index);
+    }
+
+    public (ulong Id, bool Hidden)[] GetManagedFCs(bool getHidden)
+    {
+        var accountFCs = Configuration.AccountFCs.Values.SelectMany(id => id).ToHashSet();
+        var notAssignedFCs = Configuration.ManagedFCs.Where(status => !accountFCs.Contains(status.Id));
+
+        return getHidden
+            ? notAssignedFCs.Where(status => status.Hidden).ToArray()
+            : notAssignedFCs.Where(status => !status.Hidden).ToArray();
     }
 }

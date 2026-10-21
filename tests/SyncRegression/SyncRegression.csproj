@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <DalamudLibPath Condition="'$(DalamudLibPath)' == ''">$(APPDATA)/XIVLauncher/addon/Hooks/dev</DalamudLibPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="../../SubmarineTracker/bin/Release/*.dll" />
+    <Reference Include="$(DalamudLibPath)/*.dll" Exclude="$(DalamudLibPath)/cimgui.dll;$(DalamudLibPath)/cimguizmo.dll;$(DalamudLibPath)/cimplot.dll;$(DalamudLibPath)/nethost.dll;$(DalamudLibPath)/Dalamud.Boot.dll" />
+    <None Include="$(DalamudLibPath)/runtimes/win-x64/native/e_sqlite3.dll" Link="e_sqlite3.dll" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

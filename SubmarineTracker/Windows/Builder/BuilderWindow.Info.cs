@@ -47,26 +47,26 @@ public partial class BuilderWindow
         ImGui.TextUnformatted(Language.ColorsWhite);
         ImGui.SameLine(spacing);
         ImGui.TextUnformatted(Language.BuilderTabInfoWhiteText);
-        Helper.TextColored(ImGuiColors.ParsedGold,Language.ColorsGold);
+        Helper.TextColored(ImGuiColors.ParsedGold, Language.ColorsGold);
         ImGui.SameLine(spacing);
         ImGui.TextUnformatted(Language.BuilderTabInfoGoldText);
-        Helper.TextColored(ImGuiColors.HealerGreen,Language.ColorsGreen);
+        Helper.TextColored(ImGuiColors.HealerGreen, Language.ColorsGreen);
         ImGui.SameLine(spacing);
         ImGui.TextUnformatted(Language.BuilderTabInfoGreenText);
-        Helper.TextColored(ImGuiColors.ParsedPink,Language.ColorsPink);
+        Helper.TextColored(ImGuiColors.ParsedPink, Language.ColorsPink);
         ImGui.SameLine(spacing);
         ImGui.TextUnformatted(Language.BuilderTabInfoPinkText);
-        Helper.TextColored(ImGuiColors.DalamudRed,Language.ColorsRed);
+        Helper.TextColored(ImGuiColors.DalamudRed, Language.ColorsRed);
         ImGui.SameLine(spacing);
         ImGui.TextUnformatted(Language.BuilderTabInfoRedText);
 
         ImGuiHelpers.ScaledDummy(5.0f);
 
         Helper.TextColored(ImGuiColors.DalamudViolet, $"{Language.TermsRoute}:");
-        Helper.TextColored(ImGuiColors.DalamudViolet,Language.ColorsViolet);
+        Helper.TextColored(ImGuiColors.DalamudViolet, Language.ColorsViolet);
         ImGui.SameLine(spacing);
         ImGui.TextUnformatted(Language.HelpyTabInfoVioletText);
-        Helper.TextColored(ImGuiColors.DalamudRed,Language.ColorsRed);
+        Helper.TextColored(ImGuiColors.DalamudRed, Language.ColorsRed);
         ImGui.SameLine(spacing);
         ImGui.TextUnformatted(Language.HelpyTabInfoRedText);
 
